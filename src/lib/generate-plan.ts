@@ -1,4 +1,4 @@
-import { UserPreferences, LearningPlan, DayPlan } from "./types";
+import { UserPreferences, LearningPlan, DayPlan, ChooseExercise } from "./types";
 
 const beginnerDays: DayPlan[] = [
   {
@@ -566,12 +566,23 @@ const intermediateDays: DayPlan[] = [
   })),
 ];
 
+function normalizeDays(days: DayPlan[]): DayPlan[] {
+  return days.map((d) => ({
+    ...d,
+    exercises: d.exercises && d.exercises.length > 0
+      ? d.exercises
+      : d.exercise
+        ? [d.exercise as ChooseExercise]
+        : [],
+  }));
+}
+
 export function generateLearningPlan(
   preferences: UserPreferences,
   level: number = 1
 ): LearningPlan {
   if (level >= 2 || preferences.level === "intermediate") {
-    return { level, days: intermediateDays };
+    return { level, days: normalizeDays(intermediateDays) };
   }
-  return { level, days: beginnerDays };
+  return { level, days: normalizeDays(beginnerDays) };
 }

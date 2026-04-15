@@ -16,12 +16,37 @@ export interface Phrase {
   context: string;
 }
 
-export interface Exercise {
-  type: "choose" | "fill";
+// ─── Exercise types ─────────────────────────────────────────
+
+export interface ChooseExercise {
+  type: "choose";
   question: string;
   options: string[];
   correctIndex: number;
 }
+
+export interface FillExercise {
+  type: "fill";
+  sentence: string;
+  correctAnswer: string;
+  hint?: string;
+}
+
+export interface WordOrderExercise {
+  type: "word_order";
+  question: string;
+  words: string[];
+  correctOrder: string;
+}
+
+export interface TranslateExercise {
+  type: "translate";
+  phrase: string;
+  correctAnswer: string;
+  acceptableAnswers?: string[];
+}
+
+export type Exercise = ChooseExercise | FillExercise | WordOrderExercise | TranslateExercise;
 
 export interface TestQuestion {
   question: string;
@@ -29,20 +54,64 @@ export interface TestQuestion {
   correctIndex: number;
 }
 
+// ─── Dialogue ───────────────────────────────────────────────
+
+export interface DialogueLine {
+  speaker: string;
+  german: string;
+  russian: string;
+}
+
+export interface DialogueExample {
+  title: string;
+  lines: DialogueLine[];
+}
+
+// ─── Day plan ───────────────────────────────────────────────
+
 export interface DayPlan {
   day: number;
   title: string;
   description: string;
+  grammarTopic?: string;
+  grammarExplanation?: string;
+  reviewWords?: Word[];
   words: Word[];
   phrases: Phrase[];
-  exercise: Exercise;
+  exercises?: Exercise[];
   test: TestQuestion[];
+  dialogueExample?: DialogueExample;
+  /** @deprecated kept for backward compat with old localStorage data */
+  exercise?: ChooseExercise;
 }
 
 export interface LearningPlan {
   level: number;
   days: DayPlan[];
+  assessedLevel?: string;
+  goal?: string;
 }
+
+// ─── Diagnostic / Assessment ────────────────────────────────
+
+export type AssessedLevel = "A0" | "A0+" | "A1-" | "A1";
+
+export interface DiagnosticQuestion {
+  id: string;
+  difficulty: "zero" | "basic" | "grammar" | "phrases";
+  question: string;
+  options: string[];
+  correctIndex: number;
+}
+
+export interface AssessmentResult {
+  score: number;
+  total: number;
+  level: AssessedLevel;
+  details: { questionId: string; correct: boolean }[];
+}
+
+// ─── Existing types ─────────────────────────────────────────
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -162,4 +231,5 @@ export interface AppState {
   studiedEarly: boolean;
   quiz: QuizState;
   wordle: WordleState;
+  assessmentResult: AssessmentResult | null;
 }

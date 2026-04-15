@@ -14,11 +14,19 @@ function buildFinalTest(state: AppState): TestQuestion[] {
   const allQuestions: TestQuestion[] = [];
   for (const day of state.plan.days) {
     allQuestions.push(...day.test);
-    allQuestions.push({
-      question: day.exercise.question,
-      options: day.exercise.options,
-      correctIndex: day.exercise.correctIndex,
-    });
+    // Pull choose-type exercises into the question pool
+    const exList = day.exercises && day.exercises.length > 0
+      ? day.exercises
+      : day.exercise ? [day.exercise] : [];
+    for (const ex of exList) {
+      if (ex.type === "choose") {
+        allQuestions.push({
+          question: ex.question,
+          options: ex.options,
+          correctIndex: ex.correctIndex,
+        });
+      }
+    }
   }
 
   const shuffled = allQuestions.sort(() => Math.random() - 0.5);

@@ -2,6 +2,7 @@
 
 import {
   AppState,
+  AssessmentResult,
   ChatMessage,
   LearningPlan,
   Mood,
@@ -63,6 +64,7 @@ const defaultState: AppState = {
       guessDistribution: [0, 0, 0, 0, 0, 0],
     },
   },
+  assessmentResult: null,
 };
 
 export function loadState(): AppState {
@@ -148,6 +150,15 @@ export function setPreferences(
   preferences: UserPreferences
 ): AppState {
   const newState: AppState = { ...state, preferences };
+  saveState(newState);
+  return newState;
+}
+
+export function setAssessmentResult(
+  state: AppState,
+  assessmentResult: AssessmentResult
+): AppState {
+  const newState: AppState = { ...state, assessmentResult };
   saveState(newState);
   return newState;
 }
