@@ -57,6 +57,24 @@ export interface ScenarioProgress {
   startedAt: number;
 }
 
+export type Mood = "great" | "good" | "tired" | "bad";
+
+export interface VocabularyItem {
+  german: string;
+  russian: string;
+  example: string;
+  topic: string;
+  dayId: number;
+  learnedAt: string;
+}
+
+export interface Achievement {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+}
+
 export interface AppState {
   preferences: UserPreferences | null;
   plan: LearningPlan | null;
@@ -68,4 +86,17 @@ export interface AppState {
   currentLevel: number;
   chatHistory: ChatMessage[];
   scenarioProgress: Record<string, ScenarioProgress>;
+  moodToday: Mood | null;
+  moodDate: string | null;
+  vocabulary: VocabularyItem[];
+  totalMinutesSpent: number;
+  totalWordsLearned: number;
+  testAccuracy: number;
+  chatMessagesCount: number;
+  scenariosCompleted: string[];
+  unlockedAchievements: string[];
+  newAchievements: string[];
+  foundEasterEgg: boolean;
+  studiedLate: boolean;
+  studiedEarly: boolean;
 }

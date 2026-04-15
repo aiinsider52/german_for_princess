@@ -7,24 +7,32 @@
   --color-pink-300: #ffb6c1;
   --color-pink-400: #ff8fab;
   --color-pink-500: #ff6b8a;
-  --color-pink-600: #e8507a;
+  --color-pink-600: #e05070;
   --color-rose-50: #fff1f2;
   --color-rose-100: #ffe4e6;
   --color-warm-50: #fdf8f6;
   --color-warm-100: #f2e8e5;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-gray-soft: #f8f0f3;
+  --font-sans: var(--font-nunito);
+  --font-display: var(--font-playfair);
+  --font-mono: monospace;
 }
 
 :root {
   --background: #fff8fa;
-  --foreground: #4a3340;
+  --foreground: #2d1b26;
+  --text-muted: #9b7080;
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 50%, #fff8fa 100%);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
 }
 
 @keyframes float {
@@ -57,12 +65,78 @@ body {
   100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
 }
 
+@keyframes drawLine {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes roadmapPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 138, 0.4); }
+  50% { transform: scale(1.08); box-shadow: 0 0 0 14px rgba(255, 107, 138, 0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes flipIn {
+  from { transform: perspective(600px) rotateY(90deg); opacity: 0; }
+  to { transform: perspective(600px) rotateY(0deg); opacity: 1; }
+}
+
+@keyframes toastSlideUp {
+  from { transform: translateY(100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes progressCircle {
+  from { stroke-dashoffset: 283; }
+}
+
+@keyframes continuePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(255, 107, 138, 0.3); }
+  50% { transform: scale(1.03); box-shadow: 0 6px 30px rgba(255, 107, 138, 0.5); }
+}
+
 .animate-float { animation: float 3s ease-in-out infinite; }
 .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
 .animate-slide-up { animation: slide-up 0.5s ease-out forwards; }
 .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
 .animate-scale-in { animation: scale-in 0.3s ease-out forwards; }
 .animate-confetti { animation: confetti 1s ease-out forwards; }
+.animate-roadmap-pulse { animation: roadmapPulse 2s ease-in-out infinite; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+.animate-flip-in { animation: flipIn 0.5s ease-out forwards; }
+.animate-toast { animation: toastSlideUp 0.4s ease-out forwards; }
+.animate-continue-pulse { animation: continuePulse 2s ease-in-out infinite; }
+
+.roadmap-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 2s ease-out forwards;
+}
+
+.roadmap-line-done {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+}
+
+.flip-card { perspective: 600px; }
+.flip-card-inner {
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+}
+.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+.flip-card-front, .flip-card-back {
+  backface-visibility: hidden;
+}
+.flip-card-back {
+  transform: rotateY(180deg);
+}
 
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }

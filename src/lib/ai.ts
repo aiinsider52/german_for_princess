@@ -158,6 +158,10 @@ export interface Scenario {
   description: string;
   setting: string;
   steps: ScenarioStep[];
+  tag?: string;
+  difficulty?: "beginner" | "intermediate";
+  isNew?: boolean;
+  easterEgg?: boolean;
 }
 
 export const scenarios: Scenario[] = [
@@ -167,6 +171,8 @@ export const scenarios: Scenario[] = [
     emoji: "🛒",
     description: "Покупаем продукты в швейцарском супермаркете",
     setting: "Ты в магазине Migros в Цюрихе. Тебе нужно купить продукты.",
+    difficulty: "beginner",
+    isNew: false,
     steps: [
       {
         situation:
@@ -201,6 +207,8 @@ export const scenarios: Scenario[] = [
     description: "Визит к врачу — записываемся и объясняем симптомы",
     setting:
       "Тебе нужно записаться к врачу и объяснить, что у тебя болит.",
+    difficulty: "beginner",
+    isNew: false,
     steps: [
       {
         situation:
@@ -235,6 +243,8 @@ export const scenarios: Scenario[] = [
     description: "Ищем и арендуем квартиру в Швейцарии",
     setting:
       "Ты ищешь квартиру в Цюрихе и пришла на осмотр.",
+    difficulty: "beginner",
+    isNew: false,
     steps: [
       {
         situation:
@@ -259,6 +269,167 @@ export const scenarios: Scenario[] = [
           "Хозяин говорит, что квартира свободна с первого числа. Скажи, что тебе нравится квартира и ты хочешь её снять.",
         hint: "Попробуй: «Die Wohnung gefällt mir sehr!» и «Ich möchte die Wohnung mieten.»",
         expectedIntent: "confirm_rent",
+      },
+    ],
+  },
+  {
+    id: "dance-studio",
+    title: "В танцевальной студии",
+    emoji: "💃",
+    description: "Бронируем занятия и спрашиваем расписание",
+    setting: "Ты в танцевальной студии в центре Цюриха. Хочешь записаться на курсы.",
+    tag: "Для тебя 💕",
+    difficulty: "beginner",
+    isNew: true,
+    steps: [
+      {
+        situation: "Ты заходишь в студию. Администратор: «Guten Tag! Wie kann ich Ihnen helfen?» Поздоровайся и скажи, что хочешь записаться на танцы.",
+        hint: "Попробуй: «Guten Tag! Ich möchte gerne Tanzkurse buchen.»",
+        expectedIntent: "book_dance",
+      },
+      {
+        situation: "«Welchen Tanzstil interessiert Sie? Wir haben Salsa, Tango und Hip-Hop.» Выбери стиль танца.",
+        hint: "Используй: «Ich interessiere mich für Salsa, bitte.»",
+        expectedIntent: "choose_style",
+      },
+      {
+        situation: "«Wann möchten Sie anfangen?» Спроси про ближайший урок.",
+        hint: "Спроси: «Wann ist der nächste Kurs?»",
+        expectedIntent: "ask_schedule",
+      },
+      {
+        situation: "«Der nächste Kurs ist am Dienstag um 19 Uhr. Soll ich Sie anmelden?» Согласись на запись.",
+        hint: "Скажи: «Ja, bitte! Das ist perfekt.»",
+        expectedIntent: "confirm_booking",
+      },
+    ],
+  },
+  {
+    id: "sushi-restaurant",
+    title: "В суши-ресторане",
+    emoji: "🍣",
+    description: "Заказываем столик, читаем меню, делаем заказ",
+    setting: "Вечер. Ты пришла в суши-ресторан в Цюрихе.",
+    tag: "Для тебя 💕",
+    difficulty: "beginner",
+    isNew: true,
+    steps: [
+      {
+        situation: "Хостес встречает тебя: «Guten Abend! Haben Sie reserviert?» Скажи, что хочешь столик на двоих.",
+        hint: "Попробуй: «Nein, aber haben Sie einen Tisch für zwei Personen?»",
+        expectedIntent: "ask_table",
+      },
+      {
+        situation: "«Natürlich! Bitte folgen Sie mir. Möchten Sie die Speisekarte?» Попроси меню.",
+        hint: "Скажи: «Ja, die Speisekarte, bitte.»",
+        expectedIntent: "ask_menu",
+      },
+      {
+        situation: "Официант спрашивает: «Was darf es sein?» Закажи суши.",
+        hint: "Попробуй: «Ich nehme den Lachs-Nigiri und die California Roll, bitte.»",
+        expectedIntent: "order_food",
+      },
+      {
+        situation: "«Sehr gut! Noch etwas zu trinken?» Закажи напиток.",
+        hint: "Скажи: «Ein Wasser, bitte.» или «Einen grünen Tee, bitte.»",
+        expectedIntent: "order_drink",
+      },
+    ],
+  },
+  {
+    id: "puppy-yoga",
+    title: "На Puppy Yoga",
+    emoji: "🐶",
+    description: "Записываемся на занятие с щеночками",
+    setting: "Ты нашла студию Puppy Yoga в Цюрихе и пришла записаться.",
+    tag: "Для тебя 💕",
+    difficulty: "beginner",
+    isNew: true,
+    steps: [
+      {
+        situation: "Инструктор: «Hallo! Willkommen bei Puppy Yoga Zürich!» Поздоровайся и спроси про свободные места.",
+        hint: "Попробуй: «Hallo! Gibt es noch freie Plätze für heute?»",
+        expectedIntent: "ask_spots",
+      },
+      {
+        situation: "«Ja! Um 16 Uhr haben wir noch zwei Plätze frei.» Скажи, что хочешь записаться.",
+        hint: "Скажи: «Super! Ich möchte mich anmelden, bitte.»",
+        expectedIntent: "sign_up",
+      },
+      {
+        situation: "«Perfekt! Haben Sie Erfahrung mit Yoga?» Расскажи о своём опыте.",
+        hint: "Скажи: «Ein bisschen. Ich bin Anfängerin.»",
+        expectedIntent: "share_experience",
+      },
+      {
+        situation: "«Kein Problem! Die Hündchen helfen beim Entspannen. 🐾 Was ist Ihr Name?» Назови своё имя.",
+        hint: "Скажи: «Mein Name ist Julia.»",
+        expectedIntent: "give_name",
+      },
+    ],
+  },
+  {
+    id: "airport",
+    title: "В аэропорту",
+    emoji: "✈️",
+    description: "Чек-ин, багаж и посадка на рейс",
+    setting: "Ты в аэропорту Цюриха, летишь в Барселону на выходные.",
+    tag: "Путешествия",
+    difficulty: "intermediate",
+    isNew: true,
+    steps: [
+      {
+        situation: "На стойке регистрации: «Guten Morgen! Ihr Reiseziel und Ticket, bitte.» Скажи куда летишь.",
+        hint: "Попробуй: «Ich fliege nach Barcelona. Hier ist mein Ticket.»",
+        expectedIntent: "checkin",
+      },
+      {
+        situation: "«Wie viel Gepäck möchten Sie aufgeben?» Скажи про багаж.",
+        hint: "Скажи: «Einen Koffer, bitte.»",
+        expectedIntent: "luggage",
+      },
+      {
+        situation: "«Haben Sie gefährliche Gegenstände dabei?» Ответь.",
+        hint: "Скажи: «Nein, natürlich nicht.»",
+        expectedIntent: "security",
+      },
+      {
+        situation: "«Ihr Gate ist B14. Guten Flug!» Поблагодари.",
+        hint: "Скажи: «Vielen Dank! Auf Wiedersehen!»",
+        expectedIntent: "thanks_bye",
+      },
+    ],
+  },
+  {
+    id: "bmw-showroom",
+    title: "В автосалоне",
+    emoji: "🏎️",
+    description: "Тест-драйв и вопросы о машине",
+    setting: "Ты в автосалоне BMW в Мюнхене. Хочешь посмотреть новые модели.",
+    tag: "Easter Egg 🥚",
+    difficulty: "intermediate",
+    isNew: true,
+    easterEgg: true,
+    steps: [
+      {
+        situation: "Менеджер: «Herzlich willkommen bei BMW München! Wie kann ich Ihnen helfen?» Скажи, что хочешь посмотреть модели.",
+        hint: "Попробуй: «Ich möchte gerne die neuen Modelle ansehen.»",
+        expectedIntent: "browse_cars",
+      },
+      {
+        situation: "«Natürlich! Interessieren Sie sich für die 3er oder 5er Serie?» Выбери серию.",
+        hint: "Скажи: «Die 3er Serie, bitte.»",
+        expectedIntent: "choose_model",
+      },
+      {
+        situation: "«Und was sagen Sie zu diesem Audi drüben? 😄» Ответь про BMW vs Audi!",
+        hint: "😄 Скажи: «Nein danke! Ich fahre nur BMW. Mein Freund fährt Audi. 😂»",
+        expectedIntent: "bmw_easter_egg",
+      },
+      {
+        situation: "«😂 Sehr gut! Möchten Sie eine Probefahrt machen?» Согласись на тест-драйв.",
+        hint: "Скажи: «Ja, eine Probefahrt wäre wunderbar!»",
+        expectedIntent: "test_drive",
       },
     ],
   },
@@ -365,6 +536,176 @@ const scenarioReplies: Record<string, Record<string, ScenarioResponse>> = {
       npcReply:
         "Wunderbar! Ich freue mich! Ich schicke Ihnen den Mietvertrag per E-Mail. Willkommen in Ihrem neuen Zuhause! 🏠",
       encouragement: "Поздравляю! Ты арендовала квартиру в Швейцарии! 🎉💕",
+    },
+  },
+  "dance-studio": {
+    book_dance: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Отличное начало! Ты вежливо выразила желание записаться на танцы.",
+      npcReply:
+        "Wunderbar! Wir haben verschiedene Kurse. Welchen Tanzstil interessiert Sie? Salsa, Tango oder Hip-Hop?",
+      encouragement: "Ты уже танцуешь на немецком! 💃💕",
+    },
+    choose_style: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Ты выбрала стиль — «Ich interessiere mich für…» отличная конструкция!",
+      npcReply:
+        "Salsa ist sehr beliebt! Die Kurse machen wirklich Spaß. Wann möchten Sie anfangen?",
+      encouragement: "Сальса — горячий выбор! 🔥",
+    },
+    ask_schedule: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Спрашивать расписание — очень практичный навык!",
+      npcReply:
+        "Der nächste Kurs ist am Dienstag um 19 Uhr. Soll ich Sie anmelden?",
+      encouragement: "Ты уже почти на уроке! 🕺✨",
+    },
+    confirm_booking: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Ты подтвердила запись — весь разговор прошёл идеально!",
+      npcReply:
+        "Perfekt! Sie sind angemeldet. Bringen Sie bitte Sportschuhe mit. Bis Dienstag! 💃",
+      encouragement: "Ура! Ты записалась на танцы по-немецки! 🎉💕",
+    },
+  },
+  "sushi-restaurant": {
+    ask_table: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Попросить столик в ресторане — ты справилась отлично!",
+      npcReply:
+        "Natürlich! Bitte folgen Sie mir. Ich habe einen schönen Tisch am Fenster für Sie. Möchten Sie die Speisekarte?",
+      encouragement: "Ты как настоящая жительница Цюриха! 🍣💕",
+    },
+    ask_menu: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Попросить меню — просто и вежливо, молодец!",
+      npcReply:
+        "Hier, bitte! Unsere Spezialität heute ist der frische Lachs-Nigiri. Sehr zu empfehlen!",
+      encouragement: "Скоро ты будешь заказывать как профи! 📋✨",
+    },
+    order_food: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Заказ еды прошёл безупречно! «Ich nehme…» — идеальная фраза.",
+      npcReply:
+        "Sehr gute Wahl! Der Lachs-Nigiri ist heute besonders frisch. Noch etwas zu trinken?",
+      encouragement: "Отличный вкус! И в еде, и в немецком 🌟",
+    },
+    order_drink: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Ты заказала напиток — полный заказ готов!",
+      npcReply:
+        "Kommt sofort! Ihr Essen ist in etwa 15 Minuten fertig. Guten Appetit! 🍣",
+      encouragement: "Весь ужин заказан по-немецки! Ты потрясающая! 🎉💖",
+    },
+  },
+  "puppy-yoga": {
+    ask_spots: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Спросить о свободных местах — отлично сформулировано!",
+      npcReply:
+        "Ja! Um 16 Uhr haben wir noch zwei Plätze frei. Die Hündchen freuen sich schon! 🐾",
+      encouragement: "Щеночки уже ждут тебя! 🐶💕",
+    },
+    sign_up: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Записаться — «sich anmelden» — отличный глагол, запомни его!",
+      npcReply:
+        "Super! Ich trage Sie ein. Haben Sie Erfahrung mit Yoga?",
+      encouragement: "Ты на пути к Puppy Yoga! 🧘‍♀️🐾",
+    },
+    share_experience: {
+      isCorrect: true,
+      correction: null,
+      explanation: "«Ich bin Anfängerin» — честно и правильно! Отличная фраза.",
+      npcReply:
+        "Kein Problem! Die Hündchen helfen beim Entspannen. 🐾 Was ist Ihr Name?",
+      encouragement: "Все когда-то начинали! Ты молодец! 💪✨",
+    },
+    give_name: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Назвать своё имя — базовый навык, и ты справилась!",
+      npcReply:
+        "Willkommen, Julia! Bis um 16 Uhr dann. Die Welpen heißen Bruno und Lotte — sie sind sehr süß! 🐶❤️",
+      encouragement: "Ты записалась на Puppy Yoga по-немецки! Бруно и Лотте ждут! 🎉🐾",
+    },
+  },
+  airport: {
+    checkin: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Ты назвала направление и показала билет — всё правильно!",
+      npcReply:
+        "Barcelona, wunderbar! Darf ich Ihren Reisepass sehen? Wie viel Gepäck möchten Sie aufgeben?",
+      encouragement: "Барселона ждёт! Ты отлично справляешься! ✈️💕",
+    },
+    luggage: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Сказать о багаже — важный шаг при регистрации!",
+      npcReply:
+        "Ein Koffer, verstanden. Er wiegt 18 Kilo — das ist in Ordnung. Haben Sie gefährliche Gegenstände dabei?",
+      encouragement: "Багаж сдан! Всё идёт по плану 🧳✨",
+    },
+    security: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Стандартный вопрос безопасности — ты ответила правильно!",
+      npcReply:
+        "Perfekt! Hier ist Ihre Bordkarte. Ihr Gate ist B14. Boarding beginnt um 10:30 Uhr. Guten Flug!",
+      encouragement: "Ты прошла регистрацию как профи! 🛫",
+    },
+    thanks_bye: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Вежливое прощание — всегда приятно!",
+      npcReply:
+        "Danke! Schöne Reise nach Barcelona! Viel Spaß! 🌞",
+      encouragement: "Ты прошла весь аэропорт по-немецки! Отличного отпуска! 🎉🌴",
+    },
+  },
+  "bmw-showroom": {
+    browse_cars: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Ты выразила желание посмотреть модели — вежливо и чётко!",
+      npcReply:
+        "Natürlich! Kommen Sie mit. Wir haben die neuesten Modelle hier. Interessieren Sie sich für die 3er oder 5er Serie?",
+      encouragement: "Добро пожаловать в мир BMW! 🏎️💕",
+    },
+    choose_model: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Выбрать серию — ты уверенно общаешься в автосалоне!",
+      npcReply:
+        "Die 3er Serie ist ausgezeichnet! Sportlich und elegant. Und was sagen Sie zu diesem Audi drüben? 😄",
+      encouragement: "3-я серия — отличный вкус! 🌟",
+    },
+    bmw_easter_egg: {
+      isCorrect: true,
+      correction: null,
+      explanation: "😂 Классический спор BMW vs Audi! Ты ответила идеально — верность BMW!",
+      npcReply:
+        "😂😂 Ha ha ha! Das ist die richtige Einstellung! BMW ist natürlich die beste Wahl. Ihr Freund weiß es nur noch nicht! 😉 Möchten Sie eine Probefahrt machen?",
+      encouragement: "😂 BMW forever! Audi-фанаты нервно курят в сторонке! Ты легенда! 🏆🏎️",
+    },
+    test_drive: {
+      isCorrect: true,
+      correction: null,
+      explanation: "Тест-драйв BMW — мечта! И ты договорилась по-немецки!",
+      npcReply:
+        "Wunderbar! Hier sind die Schlüssel. Viel Spaß bei der Probefahrt! Freude am Fahren! 🏎️💨",
+      encouragement: "Ты только что получила ключи от BMW! Freude am Fahren! 🎉🏎️💕",
     },
   },
 };
