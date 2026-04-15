@@ -5,9 +5,11 @@ import {
   ChatMessage,
   LearningPlan,
   Mood,
+  QuizState,
   ScenarioProgress,
   UserPreferences,
   VocabularyItem,
+  WordleState,
 } from "./types";
 
 const STORAGE_KEY = "julia-german-app";
@@ -36,6 +38,27 @@ const defaultState: AppState = {
   foundEasterEgg: false,
   studiedLate: false,
   studiedEarly: false,
+  quiz: {
+    lastPlayedDate: null,
+    lastScore: null,
+    totalQuizzesTaken: 0,
+    totalCorrectAnswers: 0,
+    lastSurpriseId: null,
+  },
+  wordle: {
+    currentWordIndex: -1,
+    currentGuesses: [],
+    gameStatus: "playing",
+    hintsUsed: 0,
+    lastCompletedWordIndex: null,
+    stats: {
+      played: 0,
+      won: 0,
+      currentStreak: 0,
+      maxStreak: 0,
+      guessDistribution: [0, 0, 0, 0, 0, 0],
+    },
+  },
 };
 
 export function loadState(): AppState {
@@ -226,6 +249,67 @@ export function unlockAchievement(state: AppState, achievementId: string): AppSt
 
 export function clearNewAchievements(state: AppState): AppState {
   const newState: AppState = { ...state, newAchievements: [] };
+  saveState(newState);
+  return newState;
+}
+
+export function saveQuizResult(
+  state: AppState,
+  score: number,
+  surpriseId: string | null
+): AppState {
+  const today = new Date().toISOString().split("T")[0];
+  const newState: AppState = {
+    ...state,
+    quiz: {
+      ...state.quiz,
+      lastPlayedDate: today,
+      lastScore: score,
+      totalQuizzesTaken: state.quiz.totalQuizzesTaken + 1,
+      totalCorrectAnswers: state.quiz.totalCorrectAnswers + score,
+      lastSurpriseId: surpriseId,
+    },
+  };
+  saveState(newState);
+  return newState;
+}
+
+export function saveWordleState(
+  state: AppState,
+  wordle: WordleState
+): AppState {
+  const newState: AppState = { ...state, wordle };
+  saveState(newState);
+  return newState;
+}
+
+export function completeWordle(
+  state: AppState,
+  won: boolean,
+  guessCount: number,
+  wordIndex: number
+): AppState {
+  const stats = { ...state.wordle.stats };
+  stats.played += 1;
+  if (won) {
+    stats.won += 1;
+    stats.currentStreak += 1;
+    stats.maxStreak = Math.max(stats.maxStreak, stats.currentStreak);
+    const dist = [...stats.guessDistribution];
+    dist[guessCount - 1] = (dist[guessCount - 1] || 0) + 1;
+    stats.guessDistribution = dist;
+  } else {
+    stats.currentStreak = 0;
+  }
+  const newState: AppState = {
+    ...state,
+    wordle: {
+      ...state.wordle,
+      gameStatus: won ? "won" : "lost",
+      lastCompletedWordIndex: wordIndex,
+      stats,
+    },
+  };
   saveState(newState);
   return newState;
 }

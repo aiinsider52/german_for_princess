@@ -75,6 +75,63 @@ export interface Achievement {
   description: string;
 }
 
+export interface QuizQuestion {
+  id: string;
+  type: "translate_de_ru" | "translate_ru_de" | "fill_phrase" | "match_emoji";
+  question: string;
+  correct: string;
+  options: string[];
+  dayId: number;
+  explanation?: string;
+}
+
+export interface Surprise {
+  id: string;
+  category: "S" | "A" | "B";
+  type: "message" | "animation" | "certificate" | "poem" | "challenge";
+  content: {
+    title: string;
+    animation: "confetti" | "float-hearts" | "sparkles" | "shimmer" | "soft-pulse";
+    message: string;
+    emoji: string;
+  };
+}
+
+export interface WordleWord {
+  word: string;
+  translation: string;
+  hint: string;
+  emoji: string;
+}
+
+export interface WordleGuessResult {
+  letter: string;
+  status: "correct" | "present" | "absent";
+}
+
+export interface QuizState {
+  lastPlayedDate: string | null;
+  lastScore: number | null;
+  totalQuizzesTaken: number;
+  totalCorrectAnswers: number;
+  lastSurpriseId: string | null;
+}
+
+export interface WordleState {
+  currentWordIndex: number;
+  currentGuesses: string[];
+  gameStatus: "playing" | "won" | "lost";
+  hintsUsed: number;
+  lastCompletedWordIndex: number | null;
+  stats: {
+    played: number;
+    won: number;
+    currentStreak: number;
+    maxStreak: number;
+    guessDistribution: number[];
+  };
+}
+
 export interface AppState {
   preferences: UserPreferences | null;
   plan: LearningPlan | null;
@@ -99,4 +156,6 @@ export interface AppState {
   foundEasterEgg: boolean;
   studiedLate: boolean;
   studiedEarly: boolean;
+  quiz: QuizState;
+  wordle: WordleState;
 }

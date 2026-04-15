@@ -24,11 +24,12 @@ import AchievementsView, {
 } from "@/components/AchievementsView";
 import AchievementToast from "@/components/AchievementToast";
 
-type Tab = "home" | "roadmap" | "scenarios" | "vocabulary" | "achievements";
+type Tab = "home" | "roadmap" | "scenarios" | "games" | "vocabulary" | "achievements";
 
 const tabs: { id: Tab; icon: string; label: string }[] = [
   { id: "home", icon: "🏠", label: "Главная" },
   { id: "roadmap", icon: "🗺️", label: "Роадмап" },
+  { id: "games", icon: "🎮", label: "Игры" },
   { id: "scenarios", icon: "🎭", label: "Сценарии" },
   { id: "vocabulary", icon: "📚", label: "Словарь" },
   { id: "achievements", icon: "🏆", label: "Успехи" },
@@ -189,6 +190,7 @@ export default function DashboardPage() {
             currentDay={state.currentDay}
           />
         )}
+        {activeTab === "games" && <GamesTab state={state} router={router} />}
         {activeTab === "scenarios" && <ScenariosView state={state} />}
         {activeTab === "vocabulary" && (
           <VocabularyView vocabulary={state.vocabulary} />
@@ -249,6 +251,8 @@ export default function DashboardPage() {
 
 import { DayPlan } from "@/lib/types";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { canPlayQuizToday } from "@/lib/quiz-logic";
+import WordleTimer from "@/components/WordleTimer";
 
 function HomeTab({
   state,
@@ -352,6 +356,134 @@ function HomeTab({
             8 ситуаций из жизни
           </p>
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── GAMES TAB ──────────────────────────────────────────── */
+
+function GamesTab({
+  state,
+  router,
+}: {
+  state: AppState;
+  router: AppRouterInstance;
+}) {
+  const quizAvailable = canPlayQuizToday(state.quiz.lastPlayedDate);
+  const quizStats = state.quiz;
+
+  return (
+    <div className="space-y-5 animate-fade-in">
+      <div className="text-center mb-2">
+        <h2 className="text-xl font-display font-bold text-[#2d1b26]">
+          Игры и практика 🎮
+        </h2>
+        <p className="text-sm text-[#9b7080]">
+          Учи немецкий играя!
+        </p>
+      </div>
+
+      {/* Quiz card */}
+      <button
+        onClick={() => router.push("/quiz")}
+        className="w-full text-left bg-gradient-to-br from-violet-50 to-pink-50 rounded-[20px] p-5 border border-violet-100/60 shadow-[0_4px_20px_rgba(255,107,138,0.08)] cursor-pointer hover:shadow-md transition-all active:scale-[0.98]"
+      >
+        <div className="flex items-start gap-4">
+          <div className="text-4xl">📝</div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-display font-bold text-[#2d1b26] text-lg">
+                Квиз дня
+              </h3>
+              {quizAvailable ? (
+                <span className="bg-green-100 text-green-600 text-[9px] font-bold px-2 py-0.5 rounded-full">
+                  ДОСТУПЕН
+                </span>
+              ) : (
+                <span className="bg-pink-100 text-pink-500 text-[9px] font-bold px-2 py-0.5 rounded-full">
+                  ПРОЙДЕН ✓
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-[#9b7080] mt-1">
+              5 вопросов на немецком — каждый день новые!
+            </p>
+            {quizStats.totalQuizzesTaken > 0 && (
+              <div className="flex gap-3 mt-2 text-[10px] text-[#9b7080]">
+                <span>🎯 Квизов: {quizStats.totalQuizzesTaken}</span>
+                <span>
+                  ✅ Точность:{" "}
+                  {quizStats.totalQuizzesTaken > 0
+                    ? Math.round(
+                        (quizStats.totalCorrectAnswers /
+                          (quizStats.totalQuizzesTaken * 5)) *
+                          100
+                      )
+                    : 0}
+                  %
+                </span>
+              </div>
+            )}
+            <p className="text-sm font-semibold text-pink-500 mt-3">
+              {quizAvailable ? "Играть →" : "Пройден сегодня 💕"}
+            </p>
+          </div>
+        </div>
+        {quizAvailable && (
+          <div className="mt-3 text-xs text-[#9b7080] text-center">
+            🎁 Ответь на все 5 — получи сюрприз!
+          </div>
+        )}
+      </button>
+
+      {/* Wordle card */}
+      <button
+        onClick={() => router.push("/wordle")}
+        className="w-full text-left bg-gradient-to-br from-emerald-50 to-pink-50 rounded-[20px] p-5 border border-emerald-100/60 shadow-[0_4px_20px_rgba(255,107,138,0.08)] cursor-pointer hover:shadow-md transition-all active:scale-[0.98]"
+      >
+        <div className="flex items-start gap-4">
+          <div className="text-4xl">🇩🇪</div>
+          <div className="flex-1">
+            <h3 className="font-display font-bold text-[#2d1b26] text-lg">
+              Немецкий Вордли
+            </h3>
+            <p className="text-xs text-[#9b7080] mt-1">
+              Угадай немецкое слово за 6 попыток!
+            </p>
+            <div className="mt-2">
+              <WordleTimer />
+            </div>
+            {state.wordle.stats.played > 0 && (
+              <div className="flex gap-3 mt-2 text-[10px] text-[#9b7080]">
+                <span>🎮 Игр: {state.wordle.stats.played}</span>
+                <span>
+                  🏆 Побед:{" "}
+                  {Math.round(
+                    (state.wordle.stats.won / state.wordle.stats.played) * 100
+                  )}
+                  %
+                </span>
+                <span>🔥 Серия: {state.wordle.stats.currentStreak}</span>
+              </div>
+            )}
+            <p className="text-sm font-semibold text-pink-500 mt-3">
+              Играть →
+            </p>
+          </div>
+        </div>
+      </button>
+
+      {/* Mini wordle grid preview */}
+      <div className="bg-white/60 rounded-[16px] p-4 border border-pink-50 text-center">
+        <div className="flex justify-center gap-1 mb-2">
+          {["🟩", "🟨", "⬜", "🟩", "🟩"].map((s, i) => (
+            <span key={i} className="text-lg">{s}</span>
+          ))}
+        </div>
+        <p className="text-xs text-[#9b7080]">
+          Новое слово каждые 6 часов · Подсказки · Telegram интеграция
+        </p>
       </div>
     </div>
   );
