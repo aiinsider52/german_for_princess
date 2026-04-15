@@ -7,9 +7,11 @@ import {
   loadState,
   saveState,
   setMood,
+  dismissMoodSection,
   unlockAchievement,
   clearNewAchievements,
 } from "@/lib/store";
+import { generateMoodInsight } from "@/lib/ai";
 
 import CircularProgress from "@/components/CircularProgress";
 import MoodWidget from "@/components/MoodWidget";
@@ -51,6 +53,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [message, setMessage] = useState("");
   const [toastQueue, setToastQueue] = useState<string[]>([]);
+  const [moodLoading, setMoodLoading] = useState(false);
 
   const refreshState = useCallback(() => {
     const loaded = loadState();
@@ -68,7 +71,15 @@ export default function DashboardPage() {
     const today = new Date().toISOString().split("T")[0];
     let current = loaded;
     if (current.moodDate !== today) {
-      current = { ...current, moodToday: null, moodDate: null };
+      current = {
+        ...current,
+        moodToday: null,
+        moodDate: null,
+        moodMessage: null,
+        moodMessageTitle: null,
+        moodMessageDate: null,
+        moodSectionDismissedDate: null,
+      };
       saveState(current);
     }
 
@@ -106,9 +117,25 @@ export default function DashboardPage() {
     }
   }, [state?.completedDays.length, state?.streak, state?.totalWordsLearned]);
 
-  const handleMood = (mood: Mood) => {
+  const handleMood = async (mood: Mood) => {
     if (!state) return;
-    const next = setMood(state, mood);
+    setMoodLoading(true);
+    const insight = await generateMoodInsight({
+      mood,
+      streak: state.streak,
+      currentDay: state.currentDay,
+      totalDays: state.plan?.days.length ?? 14,
+      currentLevel: state.currentLevel,
+      completedDays: state.completedDays,
+    });
+    const next = setMood(state, mood, insight);
+    setState(next);
+    setMoodLoading(false);
+  };
+
+  const handleDismissMoodSection = () => {
+    if (!state) return;
+    const next = dismissMoodSection(state);
     setState(next);
   };
 
@@ -132,6 +159,7 @@ export default function DashboardPage() {
   const currentToastAchievement = currentToastId
     ? getAchievementById(currentToastId)
     : null;
+  const showMoodSection = state.moodSectionDismissedDate !== state.moodDate;
 
   return (
     <div className="min-h-screen pb-24">
@@ -165,7 +193,40 @@ export default function DashboardPage() {
           </div>
 
           {/* Mood widget */}
-          <MoodWidget currentMood={state.moodToday} onSelect={handleMood} />
+          {showMoodSection && !moodLoading && (!state.moodToday || !state.moodMessage) && (
+            <MoodWidget currentMood={state.moodToday} onSelect={handleMood} />
+          )}
+
+          {showMoodSection && moodLoading && (
+            <div className="bg-white/80 backdrop-blur-sm rounded-[20px] p-4 border border-pink-100 shadow-[0_4px_20px_rgba(255,107,138,0.08)] animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="w-2 h-2 bg-pink-400 rounded-full animate-pulse-soft"
+                      style={{ animationDelay: `${i * 180}ms` }}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-pink-500">
+                  Подбираю для тебя нежное сообщение...
+                </span>
+              </div>
+            </div>
+          )}
+
+          {showMoodSection &&
+            !moodLoading &&
+            state.moodToday &&
+            state.moodMessage && (
+              <MoodInsightCard
+                mood={state.moodToday}
+                title={state.moodMessageTitle ?? "Небольшое послание для тебя 💕"}
+                message={state.moodMessage}
+                onClose={handleDismissMoodSection}
+              />
+            )}
 
           {/* Daily quote */}
           <DailyQuote dayIndex={state.currentDay - 1} />
@@ -253,6 +314,68 @@ import { DayPlan } from "@/lib/types";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { canPlayQuizToday } from "@/lib/quiz-logic";
 import WordleTimer from "@/components/WordleTimer";
+
+function MoodInsightCard({
+  mood,
+  title,
+  message,
+  onClose,
+}: {
+  mood: Mood;
+  title: string;
+  message: string;
+  onClose: () => void;
+}) {
+  const moodEmoji: Record<Mood, string> = {
+    great: "🌸",
+    good: "😊",
+    tired: "😴",
+    bad: "💗",
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-pink-50 via-white to-rose-50 rounded-[20px] p-4 border border-pink-200 shadow-[0_4px_20px_rgba(255,107,138,0.10)] animate-scale-in">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-xl shrink-0">
+            {moodEmoji[mood]}
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pink-400">
+              Настроение дня
+            </p>
+            <h3 className="font-display text-lg font-bold text-[#2d1b26] mt-1">
+              {title}
+            </h3>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="text-[#9b7080] hover:text-pink-500 transition-colors text-sm cursor-pointer"
+          aria-label="Закрыть блок настроения до завтра"
+        >
+          ✕
+        </button>
+      </div>
+
+      <p className="text-sm text-[#6f5160] leading-relaxed mt-3 whitespace-pre-line">
+        {message}
+      </p>
+
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <p className="text-xs text-pink-400">
+          Если захочешь, завтра появится новый вопрос и новое сообщение.
+        </p>
+        <button
+          onClick={onClose}
+          className="shrink-0 px-4 py-2 rounded-[50px] bg-white border border-pink-200 text-sm font-medium text-pink-500 hover:bg-pink-50 transition-all cursor-pointer"
+        >
+          Скрыть до завтра
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function HomeTab({
   state,

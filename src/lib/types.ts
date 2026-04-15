@@ -145,6 +145,10 @@ export interface AppState {
   scenarioProgress: Record<string, ScenarioProgress>;
   moodToday: Mood | null;
   moodDate: string | null;
+  moodMessage: string | null;
+  moodMessageTitle: string | null;
+  moodMessageDate: string | null;
+  moodSectionDismissedDate: string | null;
   vocabulary: VocabularyItem[];
   totalMinutesSpent: number;
   totalWordsLearned: number;

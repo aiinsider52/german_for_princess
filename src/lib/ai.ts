@@ -1,5 +1,7 @@
 "use client";
 
+import { Mood } from "./types";
+
 export interface MistakeExplanation {
   explanation: string;
   examples: string[];
@@ -21,35 +23,244 @@ export interface ScenarioResponse {
   encouragement: string;
 }
 
-const mistakeExplanations: Record<string, MistakeExplanation> = {
-  default: {
-    explanation:
-      "Это частая ошибка у начинающих! Правильный ответ отличается, потому что в немецком языке важно запоминать точные формы слов и фраз. Не переживай — с практикой это станет автоматическим!",
-    examples: [
-      "der Kaffee (кофе) — артикль der, потому что это мужской род",
-      "Ich bin müde (Я устала) — глагол bin идёт с ich",
-    ],
-    encouragement: "Ты уже делаешь большие успехи! Продолжай 💖",
+export interface MoodInsight {
+  title: string;
+  message: string;
+}
+
+export async function generateMoodInsight(input: {
+  mood: Mood;
+  streak: number;
+  currentDay: number;
+  totalDays: number;
+  currentLevel: number;
+  completedDays: number[];
+}): Promise<MoodInsight> {
+  await new Promise((r) => setTimeout(r, 500 + Math.random() * 400));
+
+  const remainingDays = Math.max(input.totalDays - input.completedDays.length, 0);
+  const streakLine =
+    input.streak > 0
+      ? `У тебя уже серия ${input.streak} ${input.streak === 1 ? "день" : input.streak < 5 ? "дня" : "дней"}, и это правда чувствуется.`
+      : "Сегодня можно начать очень мягко, без давления.";
+
+  if (input.mood === "great") {
+    return {
+      title: "Сегодня у тебя много ресурса 🌸",
+      message: `Похоже, сегодня можно взять день ${input.currentDay} в полном формате: пройти слова, фразы и мини-тест, а потом закрепить всё в чате. ${streakLine} Если останутся силы, добавь себе маленький бонус: скажи 3 новые фразы вслух по-немецки.`,
+    };
+  }
+
+  if (input.mood === "good") {
+    return {
+      title: "Хороший спокойный ритм 😊",
+      message: `Сегодня лучше всего подойдёт ровное занятие без спешки: пройди основной урок дня ${input.currentDay}, а в конце повтори 5 слов, которые уже встречались раньше. ${remainingDays > 0 ? `До конца текущего плана осталось ${remainingDays}.` : "Ты уже у финиша этого уровня."}`,
+    };
+  }
+
+  if (input.mood === "tired") {
+    return {
+      title: "Сегодня нужен бережный режим 😴",
+      message: `Давай без перегруза: открой только слова дня ${input.currentDay}, прочитай их медленно и выбери 2, которые хочется запомнить сегодня. Этого уже достаточно. ${streakLine} Даже короткий контакт с языком сегодня важнее, чем идеальный результат.`,
+    };
+  }
+
+  return {
+    title: "Я рядом, даже если день тяжёлый 💗",
+    message: `Сегодня не нужно требовать от себя слишком много. Сделай самый мягкий вариант: открой урок дня ${input.currentDay}, посмотри 3 слова и одну фразу, а потом остановись, если почувствуешь, что этого достаточно. Немецкий никуда не убегает, а твой темп тоже правильный.`,
+  };
+}
+
+const semanticHintBuilders: Array<{
+  pattern: RegExp;
+  build: (userAnswer: string, correctAnswer: string) => string;
+}> = [
+  {
+    pattern: /guten morgen/i,
+    build: (userAnswer, correctAnswer) =>
+      `«Guten Morgen» говорят утром. Поэтому здесь нужен ответ «${correctAnswer}». Вариант «${userAnswer}» относится к другой ситуации, а не к утреннему приветствию.`,
   },
-  grammar: {
-    explanation:
-      "В немецкой грамматике важна форма глагола. Каждое местоимение требует свою форму: ich bin, du bist, er/sie ist. Это просто нужно запомнить — и ты уже на верном пути!",
-    examples: [
-      "ich bin (я есть), du bist (ты есть), er ist (он есть)",
-      "ich habe (я имею), du hast (ты имеешь)",
-    ],
-    encouragement: "Грамматика — это как пазл. Каждый кусочек встанет на место! 🧩💕",
+  {
+    pattern: /wie heißen sie/i,
+    build: (userAnswer, correctAnswer) =>
+      `Фраза «Wie heißen Sie?» спрашивает именно имя человека. Поэтому правильный смысл — «${correctAnswer}». Вариант «${userAnswer}» был бы ответом уже на другой вопрос.`,
   },
-  vocab: {
-    explanation:
-      "Немецкие слова иногда похожи друг на друга, и это нормально — путать их в начале. Главное — повторять и использовать в контексте. Скоро ты будешь вспоминать их мгновенно!",
-    examples: [
-      "die Milch (молоко) vs das Wasser (вода) — разные артикли!",
-      "günstig (недорого) vs teuer (дорого) — антонимы",
-    ],
-    encouragement: "Каждое новое слово — это маленькая победа! 🌟",
+  {
+    pattern: /wie viel kostet/i,
+    build: (userAnswer, correctAnswer) =>
+      `Здесь ключевая часть — «wie viel kostet», то есть «сколько стоит». Поэтому правильный ответ — «${correctAnswer}». Вариант «${userAnswer}» не связан с ценой.`,
   },
-};
+  {
+    pattern: /wo ist/i,
+    build: (userAnswer, correctAnswer) =>
+      `Слово «wo» значит «где», поэтому здесь нужен ответ про место: «${correctAnswer}». Вариант «${userAnswer}» меняет смысл вопроса.`,
+  },
+  {
+    pattern: /ich habe hunger/i,
+    build: (userAnswer, correctAnswer) =>
+      `«Ich habe Hunger» буквально значит «у меня есть голод», то есть по-русски «${correctAnswer}». Вариант «${userAnswer}» описывает уже другое состояние.`,
+  },
+  {
+    pattern: /ich liebe dich/i,
+    build: (userAnswer, correctAnswer) =>
+      `Это очень конкретная фраза: «Ich liebe dich» значит «${correctAnswer}». Вариант «${userAnswer}» близок по эмоции, но это уже не тот же самый смысл.`,
+  },
+];
+
+const grammarFamilies = [
+  {
+    forms: ["bin", "bist", "ist", "sind", "seid"],
+    label: "глагола sein",
+  },
+  {
+    forms: ["habe", "hast", "hat", "haben", "habt"],
+    label: "глагола haben",
+  },
+  {
+    forms: ["möchte", "möchtest", "möchten", "möchtet"],
+    label: "конструкции möchten",
+  },
+  {
+    forms: ["esse", "isst", "essen", "esst"],
+    label: "глагола essen",
+  },
+  {
+    forms: ["trinke", "trinkst", "trinkt", "trinken"],
+    label: "глагола trinken",
+  },
+  {
+    forms: ["arbeite", "arbeitest", "arbeitet", "arbeiten"],
+    label: "глагола arbeiten",
+  },
+  {
+    forms: ["lerne", "lernst", "lernt", "lernen"],
+    label: "глагола lernen",
+  },
+];
+
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[«»"'!?.,:;()]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasCyrillic(text: string): boolean {
+  return /[а-яё]/i.test(text);
+}
+
+function hasLatin(text: string): boolean {
+  return /[a-zäöüß]/i.test(text);
+}
+
+function extractSubject(question: string): string | null {
+  const match = question.match(/\b(ich|du|er|sie|es|wir|ihr|Sie)\b/i);
+  return match ? match[0] : null;
+}
+
+function findGrammarFamily(word: string) {
+  const normalized = normalizeText(word);
+  return grammarFamilies.find((family) =>
+    family.forms.includes(normalized)
+  );
+}
+
+function inferQuestionKind(
+  question: string,
+  userAnswer: string,
+  correctAnswer: string
+): "fill_phrase" | "translate_de_ru" | "translate_ru_de" | "general" {
+  if (question.includes("___")) return "fill_phrase";
+  if (!hasCyrillic(question) && hasCyrillic(correctAnswer)) {
+    return "translate_de_ru";
+  }
+  if (hasCyrillic(question) && hasLatin(correctAnswer)) {
+    return "translate_ru_de";
+  }
+  if (hasCyrillic(userAnswer) !== hasCyrillic(correctAnswer)) {
+    return hasCyrillic(correctAnswer) ? "translate_de_ru" : "translate_ru_de";
+  }
+  return "general";
+}
+
+function buildGrammarExplanation(
+  question: string,
+  userAnswer: string,
+  correctAnswer: string
+): string {
+  const fullCorrect = question.replace("___", correctAnswer);
+  const family = findGrammarFamily(correctAnswer);
+  const wrongFamily = findGrammarFamily(userAnswer);
+  const subject = extractSubject(question);
+
+  if (family && wrongFamily && family.label === wrongFamily.label && subject) {
+    return `Здесь нужна форма «${correctAnswer}», потому что в предложении есть «${subject}», а с этим местоимением используется именно эта форма ${family.label}. Правильная фраза: «${fullCorrect}».`;
+  }
+
+  if (/^(der|die|das|ein|eine|einen|einem|einer)$/i.test(correctAnswer)) {
+    return `Здесь важен правильный артикль. В этой фразе подходит именно «${correctAnswer}», потому что без него конструкция звучит неграмотно. Правильный вариант: «${fullCorrect}».`;
+  }
+
+  return `Здесь нужно слово «${correctAnswer}», потому что только с ним фраза собирается правильно: «${fullCorrect}». Вариант «${userAnswer}» меняет грамматику или делает предложение неестественным.`;
+}
+
+function buildVocabularyExplanation(
+  question: string,
+  userAnswer: string,
+  correctAnswer: string
+): string {
+  const semanticHint = semanticHintBuilders.find(({ pattern }) =>
+    pattern.test(question)
+  );
+
+  if (semanticHint) {
+    return semanticHint.build(userAnswer, correctAnswer);
+  }
+
+  if (/^\d+$/.test(normalizeText(question)) || /^\d+$/.test(normalizeText(correctAnswer))) {
+    return `Здесь нужно было сопоставить число точно: «${question}» — это «${correctAnswer}». Вариант «${userAnswer}» выглядит похоже, но это уже другое число.`;
+  }
+
+  if (/^(der|die|das)\s+/i.test(question)) {
+    return `Здесь важно запомнить слово вместе с его формой: «${question}» переводится как «${correctAnswer}». Вариант «${userAnswer}» — это уже другое слово, поэтому он не подходит.`;
+  }
+
+  return `В этом вопросе нужно было соотнести именно «${question}» и «${correctAnswer}». Ответ «${userAnswer}» близок по теме, но передаёт другой смысл, поэтому здесь он неверный.`;
+}
+
+function buildRelevantExamples(
+  question: string,
+  userAnswer: string,
+  correctAnswer: string,
+  kind: "fill_phrase" | "translate_de_ru" | "translate_ru_de" | "general"
+): string[] {
+  if (kind === "fill_phrase") {
+    return [
+      `Правильно: ${question.replace("___", correctAnswer)}`,
+      `Не подходит: ${question.replace("___", userAnswer)}`,
+    ];
+  }
+
+  if (kind === "translate_de_ru") {
+    return [
+      `${question} = ${correctAnswer}`,
+      `Здесь не подходит перевод: ${userAnswer}`,
+    ];
+  }
+
+  if (kind === "translate_ru_de") {
+    return [
+      `${question} = ${correctAnswer}`,
+      `Не путай с другим словом: ${userAnswer}`,
+    ];
+  }
+
+  return [
+    `Правильный вариант: ${correctAnswer}`,
+    `Твой вариант: ${userAnswer}`,
+  ];
+}
 
 export async function explainMistake(input: {
   question: string;
@@ -58,13 +269,38 @@ export async function explainMistake(input: {
   context: "grammar" | "vocab";
 }): Promise<MistakeExplanation> {
   await new Promise((r) => setTimeout(r, 800 + Math.random() * 700));
-
-  const base = mistakeExplanations[input.context] || mistakeExplanations.default;
+  const kind = inferQuestionKind(
+    input.question,
+    input.userAnswer,
+    input.correctAnswer
+  );
+  const isGrammar =
+    input.context === "grammar" || kind === "fill_phrase";
+  const explanation = isGrammar
+    ? buildGrammarExplanation(
+        input.question,
+        input.userAnswer,
+        input.correctAnswer
+      )
+    : buildVocabularyExplanation(
+        input.question,
+        input.userAnswer,
+        input.correctAnswer
+      );
+  const examples = buildRelevantExamples(
+    input.question,
+    input.userAnswer,
+    input.correctAnswer,
+    kind
+  );
+  const encouragement = isGrammar
+    ? "Ты уже хорошо замечаешь структуру фразы. Ещё немного практики — и это станет автоматическим 💕"
+    : "Ты не случайно ошиблась, а почти попала в смысл. Это хороший знак 🌸";
 
   return {
-    explanation: `В этом вопросе правильный ответ — «${input.correctAnswer}», а не «${input.userAnswer}». ${base.explanation}`,
-    examples: base.examples,
-    encouragement: base.encouragement,
+    explanation,
+    examples,
+    encouragement,
   };
 }
 

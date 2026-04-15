@@ -21,6 +21,39 @@ export default function Quiz({
   const [explanation, setExplanation] = useState<MistakeExplanation | null>(null);
   const [loadingExplanation, setLoadingExplanation] = useState(false);
 
+  const getExplanationContext = (
+    currentQuestion: string,
+    correctAnswer: string
+  ): "grammar" | "vocab" => {
+    if (currentQuestion.includes("___")) return "grammar";
+    if (/\b(ich|du|er|sie|es|wir|ihr|Sie)\b/i.test(currentQuestion)) {
+      const normalizedAnswer = correctAnswer.toLowerCase();
+      if (
+        [
+          "bin",
+          "bist",
+          "ist",
+          "sind",
+          "seid",
+          "habe",
+          "hast",
+          "hat",
+          "haben",
+          "habt",
+          "esse",
+          "isst",
+          "trinke",
+          "möchte",
+          "arbeite",
+          "lerne",
+        ].includes(normalizedAnswer)
+      ) {
+        return "grammar";
+      }
+    }
+    return "vocab";
+  };
+
   const handleSelect = async (index: number) => {
     if (answered) return;
     setSelected(index);
@@ -35,7 +68,7 @@ export default function Quiz({
           question,
           userAnswer: options[index],
           correctAnswer: options[correctIndex],
-          context: "vocab",
+          context: getExplanationContext(question, options[correctIndex]),
         });
         setExplanation(result);
       } catch {
@@ -116,7 +149,7 @@ export default function Quiz({
                 />
               ))}
             </div>
-            <span className="text-pink-400 text-sm">Подготавливаю объяснение...</span>
+            <span className="text-pink-400 text-sm">Анализирую ошибку...</span>
           </div>
         </div>
       )}

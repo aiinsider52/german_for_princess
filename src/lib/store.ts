@@ -27,6 +27,10 @@ const defaultState: AppState = {
   scenarioProgress: {},
   moodToday: null,
   moodDate: null,
+  moodMessage: null,
+  moodMessageTitle: null,
+  moodMessageDate: null,
+  moodSectionDismissedDate: null,
   vocabulary: [],
   totalMinutesSpent: 0,
   totalWordsLearned: 0,
@@ -213,9 +217,31 @@ export function updateScenarioProgress(
   return newState;
 }
 
-export function setMood(state: AppState, mood: Mood): AppState {
+export function setMood(
+  state: AppState,
+  mood: Mood,
+  moodMessage?: { title: string; message: string }
+): AppState {
   const today = new Date().toISOString().split("T")[0];
-  const newState: AppState = { ...state, moodToday: mood, moodDate: today };
+  const newState: AppState = {
+    ...state,
+    moodToday: mood,
+    moodDate: today,
+    moodMessage: moodMessage?.message ?? state.moodMessage,
+    moodMessageTitle: moodMessage?.title ?? state.moodMessageTitle,
+    moodMessageDate: today,
+    moodSectionDismissedDate: null,
+  };
+  saveState(newState);
+  return newState;
+}
+
+export function dismissMoodSection(state: AppState): AppState {
+  const today = new Date().toISOString().split("T")[0];
+  const newState: AppState = {
+    ...state,
+    moodSectionDismissedDate: today,
+  };
   saveState(newState);
   return newState;
 }
