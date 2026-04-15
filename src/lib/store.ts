@@ -6,6 +6,8 @@ import {
   ChatMessage,
   LearningPlan,
   Mood,
+  PuzzleLevelProgress,
+  PuzzleState,
   QuizState,
   ScenarioProgress,
   UserPreferences,
@@ -65,6 +67,12 @@ const defaultState: AppState = {
     },
   },
   assessmentResult: null,
+  puzzle: {
+    levelsProgress: {},
+    totalStars: 0,
+    currentLevel: 1,
+    rescueQuizzesTaken: 0,
+  },
 };
 
 export function loadState(): AppState {
@@ -345,6 +353,54 @@ export function completeWordle(
       gameStatus: won ? "won" : "lost",
       lastCompletedWordIndex: wordIndex,
       stats,
+    },
+  };
+  saveState(newState);
+  return newState;
+}
+
+export function savePuzzleLevelComplete(
+  state: AppState,
+  levelId: number,
+  stars: number,
+  livesRemaining: number,
+  wordsLearned: string[]
+): AppState {
+  const existing = state.puzzle.levelsProgress[levelId];
+  const bestStars = Math.max(stars, existing?.stars ?? 0);
+  const bestLives = Math.max(livesRemaining, existing?.bestLives ?? 0);
+  const allWords = Array.from(new Set([...(existing?.wordsLearned ?? []), ...wordsLearned]));
+
+  const progress: PuzzleLevelProgress = {
+    completed: true,
+    stars: bestStars,
+    bestLives,
+    wordsLearned: allWords,
+  };
+
+  const newLevelsProgress = { ...state.puzzle.levelsProgress, [levelId]: progress };
+  const totalStars = Object.values(newLevelsProgress).reduce((sum, p) => sum + p.stars, 0);
+  const completedCount = Object.values(newLevelsProgress).filter((p) => p.completed).length;
+
+  const newState: AppState = {
+    ...state,
+    puzzle: {
+      ...state.puzzle,
+      levelsProgress: newLevelsProgress,
+      totalStars,
+      currentLevel: Math.max(state.puzzle.currentLevel, completedCount + 1),
+    },
+  };
+  saveState(newState);
+  return newState;
+}
+
+export function incrementRescueQuiz(state: AppState): AppState {
+  const newState: AppState = {
+    ...state,
+    puzzle: {
+      ...state.puzzle,
+      rescueQuizzesTaken: state.puzzle.rescueQuizzesTaken + 1,
     },
   };
   saveState(newState);

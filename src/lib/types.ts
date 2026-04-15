@@ -201,6 +201,20 @@ export interface WordleState {
   };
 }
 
+export interface PuzzleLevelProgress {
+  completed: boolean;
+  stars: number;
+  bestLives: number;
+  wordsLearned: string[];
+}
+
+export interface PuzzleState {
+  levelsProgress: Record<number, PuzzleLevelProgress>;
+  totalStars: number;
+  currentLevel: number;
+  rescueQuizzesTaken: number;
+}
+
 export interface AppState {
   preferences: UserPreferences | null;
   plan: LearningPlan | null;
@@ -232,4 +246,5 @@ export interface AppState {
   quiz: QuizState;
   wordle: WordleState;
   assessmentResult: AssessmentResult | null;
+  puzzle: PuzzleState;
 }
