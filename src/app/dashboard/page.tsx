@@ -597,39 +597,6 @@ function GamesTab({
         </div>
       </button>
 
-      {/* Puzzle card */}
-      <button
-        onClick={() => router.push("/puzzle")}
-        className="w-full text-left bg-gradient-to-br from-purple-50 to-pink-50 rounded-[20px] p-5 border border-purple-100/60 shadow-[0_4px_20px_rgba(255,107,138,0.08)] cursor-pointer hover:shadow-md transition-all active:scale-[0.98]"
-      >
-        <div className="flex items-start gap-4">
-          <div className="text-4xl">🔩</div>
-          <div className="flex-1">
-            <h3 className="font-display font-bold text-[#2d1b26] text-lg">
-              Puzzle Adventure
-            </h3>
-            <p className="text-xs text-[#9b7080] mt-1">
-              Откручивай болтики — учи немецкий!
-            </p>
-            {state.puzzle.totalStars > 0 && (
-              <div className="flex gap-3 mt-2 text-[10px] text-[#9b7080]">
-                <span>
-                  ⭐ Звёзд: {state.puzzle.totalStars}/15
-                </span>
-                <span>
-                  🏆 Уровней:{" "}
-                  {Object.values(state.puzzle.levelsProgress).filter((p) => p.completed).length}
-                  /5
-                </span>
-              </div>
-            )}
-            <p className="text-sm font-semibold text-pink-500 mt-3">
-              Играть →
-            </p>
-          </div>
-        </div>
-      </button>
-
       {/* Mini wordle grid preview */}
       <div className="bg-white/60 rounded-[16px] p-4 border border-pink-50 text-center">
         <div className="flex justify-center gap-1 mb-2">
